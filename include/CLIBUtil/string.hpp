@@ -226,5 +226,37 @@ namespace clib_util
 			auto range = a_str | std::ranges::views::split(a_delimiter) | std::ranges::views::transform([](auto&& r) { return std::string_view(r); });
 			return { range.begin(), range.end() };
 		}
+
+		inline RE::GColor to_color(const std::string& str, RE::GColor defaultColor)
+		{
+			RE::GColor color;
+
+			auto components = split(str, ",");
+			if (components.size() < 3) {
+				return defaultColor;
+			}
+
+			trim(components[0]);
+			trim(components[1]);
+			trim(components[2]);
+
+			if (components.size() == 4) {
+				trim(components[3]);
+			}
+
+			if (!is_only_digit(components[0]) || !is_only_digit(components[1]) || !is_only_digit(components[2]) ||
+				(components.size() == 4 && !is_only_digit(components[3]))) {
+				return defaultColor;
+			}
+
+			color.colorData.channels.red = min(255, max(0, to_num<std::uint8_t>(components[0])));
+			color.colorData.channels.green = min(255, max(0, to_num<std::uint8_t>(components[1])));
+			color.colorData.channels.blue = min(255, max(0, to_num<std::uint8_t>(components[2])));
+
+			color.colorData.channels.alpha = (components.size() == 4) ? min(255, max(0, to_num<std::uint8_t>(components[3]))) : 255;
+
+			return color;
+		}
+
 	}
 }
