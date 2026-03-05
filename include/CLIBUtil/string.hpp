@@ -235,18 +235,18 @@ namespace clib_util
 		/// - Float values: [0.0-1.0],[0.0-1.0],[0.0-1.0],[0.0-1.0]
 		/// - Hex values: 0xRRGGBB or 0xAARRGGBB (Note Hex values use ARGB format)
 		/// - Hex values with # prefix: #RRGGBB or #AARRGGBB (Note Hex values use ARGB format)
-		inline RE::GColor to_color(const std::string& str, RE::GColor defaultColor)
+		inline std::optional<RE::GColor> to_color(const std::string& str)
 		{
 			std::string trimmedStr = trim_copy(str);
 
 			if (trimmedStr.empty()) {
-				return defaultColor;
+				return std::nullopt;
 			}
 
 			trimmedStr = tolower(trimmedStr);
 
 			if (trimmedStr[0] == '#') {
-				trimmedStr = "0x" + trimmedStr.substr(1); // Convert #RRGGBB to 0xRRGGBB for uniform processing
+				trimmedStr = "0x" + trimmedStr.substr(1);  // Convert #RRGGBB to 0xRRGGBB for uniform processing
 			}
 
 			// Handle hex format: 0xRRGGBB or 0xAARRGGBB
@@ -255,7 +255,7 @@ namespace clib_util
 				auto length = hexDigits.length();
 
 				if (length != 6 && length != 8) {
-					return defaultColor;
+					return std::nullopt;
 				}
 
 				std::uint32_t hexValue = to_num<std::uint32_t>(trimmedStr, true);
@@ -270,7 +270,7 @@ namespace clib_util
 			// Handle comma-separated format: integer or float values
 			auto components = split(trimmedStr, ",");
 			if (components.size() < 3) {
-				return defaultColor;
+				return std::nullopt;
 			}
 
 			trim(components[0]);
@@ -300,14 +300,14 @@ namespace clib_util
 					blue = min(1.0f, max(0.0f, blue)) * 255.0f;
 					alpha = min(1.0f, max(0.0f, alpha)) * 255.0f;
 
-					return {
+					return RE::GColor{
 						static_cast<std::uint8_t>(red),
 						static_cast<std::uint8_t>(green),
 						static_cast<std::uint8_t>(blue),
 						static_cast<std::uint8_t>(alpha)
 					};
 				} catch (...) {
-					return defaultColor;
+					return std::nullopt;
 				}
 			} else {
 				try {
@@ -316,16 +316,25 @@ namespace clib_util
 					auto blue = min(255, max(0, to_num<int>(components[2])));
 					auto alpha = (components.size() == 4) ? min(255, max(0, to_num<int>(components[3]))) : 255;
 
-					return {
+					return RE::GColor{
 						static_cast<std::uint8_t>(red),
 						static_cast<std::uint8_t>(green),
 						static_cast<std::uint8_t>(blue),
 						static_cast<std::uint8_t>(alpha)
 					};
 				} catch (...) {
-					return defaultColor;
+					return std::nullopt;
 				}
 			}
+		}
+
+		inline RE::GColor to_color(const std::string& str, RE::GColor defaultColor)
+		{
+			if (auto color = to_color(str)) {
+				return *color;
+			}
+
+			return defaultColor;
 		}
 	}
 }
