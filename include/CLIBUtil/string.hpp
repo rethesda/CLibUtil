@@ -295,10 +295,10 @@ namespace clib_util
 					float alpha = (components.size() == 4) ? to_num<float>(components[3]) : 1.0f;
 
 					// Clamp values to [0.0, 1.0] range
-					red = min(1.0f, max(0.0f, red)) * 255.0f;
-					green = min(1.0f, max(0.0f, green)) * 255.0f;
-					blue = min(1.0f, max(0.0f, blue)) * 255.0f;
-					alpha = min(1.0f, max(0.0f, alpha)) * 255.0f;
+					red = std::min(1.0f, std::max(0.0f, red)) * 255.0f;
+					green = std::min(1.0f, std::max(0.0f, green)) * 255.0f;
+					blue = std::min(1.0f, std::max(0.0f, blue)) * 255.0f;
+					alpha = std::min(1.0f, std::max(0.0f, alpha)) * 255.0f;
 
 					return RE::GColor{
 						static_cast<std::uint8_t>(red),
@@ -311,10 +311,10 @@ namespace clib_util
 				}
 			} else {
 				try {
-					auto red = min(255, max(0, to_num<int>(components[0])));
-					auto green = min(255, max(0, to_num<int>(components[1])));
-					auto blue = min(255, max(0, to_num<int>(components[2])));
-					auto alpha = (components.size() == 4) ? min(255, max(0, to_num<int>(components[3]))) : 255;
+					auto red = std::min(255, std::max(0, to_num<int>(components[0])));
+					auto green = std::min(255, std::max(0, to_num<int>(components[1])));
+					auto blue = std::min(255, std::max(0, to_num<int>(components[2])));
+					auto alpha = (components.size() == 4) ? std::min(255, std::max(0, to_num<int>(components[3]))) : 255;
 
 					return RE::GColor{
 						static_cast<std::uint8_t>(red),
