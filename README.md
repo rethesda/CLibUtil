@@ -23,3 +23,21 @@ A header only library of utility functions spun off from CommonLibSSE
  
  + simpleINI.hpp
     + convenient [SimpleINI](https://github.com/brofield/simpleini) value getter and setter
+
+## xmake support:
+
+you need to use ClibUtil as submodule like this:
+```
+git submodule add https://github.com/powerof3/CLibUtil extern/clib-util
+```
+
+in your xmake.lua:
+
+```lua
+includes("extern/clib-util")
+```
+and in target:
+```lua
+add_deps("clib-util")
+```
+
