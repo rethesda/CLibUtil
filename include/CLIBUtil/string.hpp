@@ -1,7 +1,9 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdint>
 #include <numeric>
+#include <optional>
 #include <ranges>
 #include <sstream>
 #include <string_view>
@@ -10,10 +12,43 @@
 
 #include "hash.hpp"
 
+#if __has_include("F4SE/F4SE.h")
+#	include "Scaleform/R/Render_Color.h"
+#else
+#	include "RE/G/GColor.h"
+#endif
+
 namespace clib_util
 {
 	namespace string
 	{
+		namespace detail
+		{
+#if __has_include("F4SE/F4SE.h")
+			using color_type = Scaleform::Render::Color;
+#else
+			using color_type = RE::GColor;
+#endif
+
+			inline color_type make_color(std::uint32_t a_value)
+			{
+#if __has_include("F4SE/F4SE.h")
+				color_type color{};
+				color.raw = a_value;
+				return color;
+#else
+				return color_type(a_value);
+#endif
+			}
+
+			inline color_type make_color(std::uint8_t a_red, std::uint8_t a_green, std::uint8_t a_blue, std::uint8_t a_alpha)
+			{
+				return make_color((static_cast<std::uint32_t>(a_alpha) << 24) |
+								  (static_cast<std::uint32_t>(a_red) << 16) |
+								  (static_cast<std::uint32_t>(a_green) << 8) | a_blue);
+			}
+		}
+
 		constexpr std::uint64_t const_hash(std::string_view a_str)
 		{
 			return hash::fnv1a_64(a_str);
@@ -235,7 +270,7 @@ namespace clib_util
 		/// - Float values: [0.0-1.0],[0.0-1.0],[0.0-1.0],[0.0-1.0]
 		/// - Hex values: 0xRRGGBB or 0xAARRGGBB (Note Hex values use ARGB format)
 		/// - Hex values with # prefix: #RRGGBB or #AARRGGBB (Note Hex values use ARGB format)
-		inline std::optional<RE::GColor> to_color(const std::string& str)
+		inline std::optional<detail::color_type> to_color(const std::string& str)
 		{
 			std::string trimmedStr = trim_copy(str);
 
@@ -264,7 +299,7 @@ namespace clib_util
 					hexValue += 0xFF000000;  // Add full alpha if not provided
 				}
 
-				return RE::GColor(hexValue);
+				return detail::make_color(hexValue);
 			}
 
 			// Handle comma-separated format: integer or float values
@@ -300,12 +335,11 @@ namespace clib_util
 					blue = std::min(1.0f, std::max(0.0f, blue)) * 255.0f;
 					alpha = std::min(1.0f, std::max(0.0f, alpha)) * 255.0f;
 
-					return RE::GColor{
+					return detail::make_color(
 						static_cast<std::uint8_t>(red),
 						static_cast<std::uint8_t>(green),
 						static_cast<std::uint8_t>(blue),
-						static_cast<std::uint8_t>(alpha)
-					};
+						static_cast<std::uint8_t>(alpha));
 				} catch (...) {
 					return std::nullopt;
 				}
@@ -316,19 +350,18 @@ namespace clib_util
 					auto blue = std::min(255, std::max(0, to_num<int>(components[2])));
 					auto alpha = (components.size() == 4) ? std::min(255, std::max(0, to_num<int>(components[3]))) : 255;
 
-					return RE::GColor{
+					return detail::make_color(
 						static_cast<std::uint8_t>(red),
 						static_cast<std::uint8_t>(green),
 						static_cast<std::uint8_t>(blue),
-						static_cast<std::uint8_t>(alpha)
-					};
+						static_cast<std::uint8_t>(alpha));
 				} catch (...) {
 					return std::nullopt;
 				}
 			}
 		}
 
-		inline RE::GColor to_color(const std::string& str, RE::GColor defaultColor)
+		inline detail::color_type to_color(const std::string& str, detail::color_type defaultColor)
 		{
 			if (auto color = to_color(str)) {
 				return *color;
