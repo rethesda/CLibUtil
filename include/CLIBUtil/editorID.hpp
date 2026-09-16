@@ -8,6 +8,9 @@ namespace clib_util::editorID
 
 	inline std::string get_editorID(const RE::TESForm* a_form)
 	{
+#if __has_include("F4SE/F4SE.h")
+		return a_form->GetFormEditorID();
+#else
 		switch (a_form->GetFormType()) {
 		case RE::FormType::Keyword:
 		case RE::FormType::LocationRefType:
@@ -46,5 +49,6 @@ namespace clib_util::editorID
 				return {};
 			}
 		}
+#endif
 	}
 }
