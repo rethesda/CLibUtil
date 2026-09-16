@@ -13,6 +13,12 @@ namespace clib_util::hotkeys
 
 	namespace details
 	{
+#if __has_include("F4SE/F4SE.h")
+		namespace input = F4SE::InputMap;
+#else
+		namespace input = SKSE::InputMap;
+#endif
+
 		inline constexpr constexpr_map<std::string_view, std::uint32_t, 156> keyMap{
 			{ { { "esc"sv, 1 },
 				{ "1"sv, 2 },
@@ -229,19 +235,31 @@ namespace clib_util::hotkeys
 
 			std::set<Key> pressed;
 			for (auto event = *a_event; event; event = event->next) {
+#if __has_include("F4SE/F4SE.h")
+				auto button = event->As<RE::ButtonEvent>();
+#else
 				auto button = event->AsButtonEvent();
+#endif
 				if (!button || !button->HasIDCode()) {
 					continue;
 				}
 
+#if __has_include("F4SE/F4SE.h")
+				auto key = button->QIDCode();
+				auto device = button->device.get();
+				auto isPressed = button->QPressed();
+#else
 				auto key = button->GetIDCode();
+				auto device = button->GetDevice();
+				auto isPressed = button->IsPressed();
+#endif
 
-				switch (button->GetDevice()) {
+				switch (device) {
 				case RE::INPUT_DEVICE::kMouse:
-					key += SKSE::InputMap::kMacro_MouseButtonOffset;
+					key += details::input::kMacro_MouseButtonOffset;
 					break;
 				case RE::INPUT_DEVICE::kGamepad:
-					key = SKSE::InputMap::GamepadMaskToKeycode(key);
+					key = details::input::GamepadMaskToKeycode(key);
 					break;
 				default:
 					break;
@@ -258,7 +276,7 @@ namespace clib_util::hotkeys
 					}
 				}
 
-				if (button->IsPressed()) {
+				if (isPressed) {
 					pressed.insert(key);
 				}
 			}
