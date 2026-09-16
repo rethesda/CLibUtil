@@ -227,7 +227,7 @@ namespace clib_util::hotkeys
 			this->pattern = string::join(rawKeys, " + ");
 		}
 
-		bool Process(RE::InputEvent* const* a_event, const bool a_ignoreMoveKeysOnKeyboard = false, const bool a_ignoreMouseClicks = false)
+		bool Process(const RE::InputEvent* const* a_event, const bool a_ignoreMoveKeysOnKeyboard = false, const bool a_ignoreMouseClicks = false)
 		{
 			if (!isValid) {
 				return false;
